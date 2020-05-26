@@ -124,7 +124,7 @@ class PyTorch(PythonPackage, CudaPackage):
     depends_on('py-future', when='@1.1: ^python@:2', type='build')
     depends_on('py-pyyaml', type=('build', 'run'))
     depends_on('py-typing', when='@0.4: ^python@:3.4', type=('build', 'run'))
-    depends_on('py-pybind11', when='@0.4:', type=('build', 'run'))
+    depends_on('py-pybind11', when='@0.4:', type=('build', 'link', 'run'))
     depends_on('blas')
     depends_on('lapack')
     depends_on('protobuf', when='@0.4:')
@@ -247,7 +247,7 @@ class PyTorch(PythonPackage, CudaPackage):
 
         enable_or_disable('mkldnn')
         if '@0.4:0.4.1+mkldnn' in self.spec:
-            env.set('MKLDNN_HOME', self.spec['intel-mkl-dnn'].prefix)
+            env.set('MKLDNN_HOME', self.spec['onednn'].prefix)
 
         enable_or_disable('nnpack')
         enable_or_disable('qnnpack')
@@ -270,8 +270,9 @@ class PyTorch(PythonPackage, CudaPackage):
         enable_or_disable('lmdb', newer=True)
         enable_or_disable('binary', keyword='BUILD', newer=True)
 
-        env.set('PYTORCH_BUILD_VERSION', self.version)
-        env.set('PYTORCH_BUILD_NUMBER', 0)
+        if not self.spec.satisfies('@master'):
+            env.set('PYTORCH_BUILD_VERSION', self.version)
+            env.set('PYTORCH_BUILD_NUMBER', 0)
 
         # BLAS to be used by Caffe2
         if '^mkl' in self.spec:
